@@ -149,5 +149,15 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.6.0">version 1.6.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        9軸センサ(MPU-9250)の地磁気測定モードの指定
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>

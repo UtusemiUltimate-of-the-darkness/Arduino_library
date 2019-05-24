@@ -2,7 +2,7 @@
  * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
  * 最終更新日: 2019-4-19
- * バージョン: 1.5.0
+ * バージョン: 1.6.0
  *
  * 機能
  *   通信系
@@ -35,13 +35,14 @@
  *     ADXL345 I2C通信での加速度取得関数の追加
  *     ADXL345 加速度に直す式の改良
  *     「SPI.begin()」の除外
+ *   v1.6.0
+ *     9軸センサ(MPU-9250)の地磁気測定モードの追加
 */
 
 // ライブラリをインクルード
 #include <Wire.h>  // I2C通信に関するライブラリ
 #include <SPI.h>   // SPI通信に関するライブラリ
 #include <math.h>  // 算術ライブラリ
-
 /**
  * 関数名: setup
  * 引数: なし
@@ -237,13 +238,13 @@ byte MPU9250GyroRange = MPU9250_GYRO_RANGE_250DPS;
 
 /**
  * 関数名 : setup_MPU9250
- * 引数 :
+ * 引数 : AK8963Mode : AK8963測定モード
  * 処理 : 9軸センサMPU9250の初期設定関数
  * 返り血 : なし
  */
 float MPU9250AccelSensitiv , MPU9250GyroSensitiv;                          // MPU9250各センサの感度
 float AK8963CompX_Sensitiv , AK8963CompY_Sensitiv , AK8963CompZ_Sensitiv;  // AK8963地磁気感度
-void setup_MPU9250 () {
+void setup_MPU9250 ( int AK8963Mode ) {
 
     // センサの書記設定
     writeI2C ( MPU9250 , MPU9250_PWR_MGMT1 , 0x00 );    // 電源管理
@@ -277,6 +278,10 @@ void setup_MPU9250 () {
         MPU9250AccelSensitiv = pow ( 2 , 5 ) / pow ( 2 , 16 );
     }
 
+    // switch ( MPU9250AccelRange ) {
+    //     case /* value */:
+    // }
+
     // 角速度感度の設定
     if ( MPU9250GyroRange == 0x00 ) {
 
@@ -295,11 +300,27 @@ void setup_MPU9250 () {
         MPU9250GyroSensitiv = 500 * pow ( 2 , 3 ) / pow ( 2 , 16 );
     }
 
-    // 地磁気感度
-    readI2C ( AK8963 , 0x10 , 3 );
-    AK8963CompX_Sensitiv = 0.15 * ( 1.0 + float ( readI2Cbuf [ 0 ] - pow ( 2 , 7 ) ) / pow ( 2 , 8 ) );
-    AK8963CompY_Sensitiv = 0.15 * ( 1.0 + float ( readI2Cbuf [ 1 ] - pow ( 2 , 7 ) ) / pow ( 2 , 8 ) );
-    AK8963CompZ_Sensitiv = 0.15 * ( 1.0 + float ( readI2Cbuf [ 2 ] - pow ( 2 , 7 ) ) / pow ( 2 , 8 ) );
+    // 測定モード設定
+    switch ( AK8963Mode ) {
+        case 0x00 :
+            int val = 0x02;
+            break;
+        case 0x01 :
+            int val = 0x05;
+            break;
+        case 0x10 :
+            int val = 0x12;
+            break;
+        case 0x11 :
+            int val = 0x15;
+    }
+    writeI2C( AK8963 , AK8963_CNTL1 , val );
+
+    // 地磁気感度調整
+    // readI2C ( AK8963 , 0x10 , 3 );
+    // AK8963CompX_Sensitiv = ( int ) readI2Cbuf [ 0 ] * ( (  ) + 1 )
+    // AK8963CompY_Sensitiv = ( int ) readI2Cbuf [ 1 ] * ( (  ) + 1 )
+    // AK8963CompZ_Sensitiv = ( int ) readI2Cbuf [ 2 ] * ( (  ) + 1 )
 }
 
 /**
