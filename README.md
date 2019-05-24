@@ -77,5 +77,15 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.2.0">version 1.2.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        serialEvent関数の追加
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>

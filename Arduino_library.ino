@@ -1,8 +1,8 @@
 /**
  * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2019-4-2
- * バージョン: 1.1.0
+ * 最終更新日: 2019-4-18
+ * バージョン: 1.2.0
  *
  * 機能
  *   通信系
@@ -22,6 +22,8 @@
  *     9軸センサMPU-9250の各データの読み込み関数の記述
  *   v1.1.0
  *     SPI通信の記述
+ *   v1.2.0
+ *     serialEvent関数の追加
 */
 
 // ライブラリをインクルード
@@ -35,6 +37,16 @@
 */
 void setup () {
     // put your setup code here, to run once:
+
+}
+
+/**
+ * 関数名: serialEvent
+ * 引数: なし
+ * 処理: シリアル入力があったときに割り込み処理を行う
+ * 返り値: なし
+*/
+void serialEvent () {
 
 }
 
@@ -66,7 +78,7 @@ void readI2C ( byte deviceAddr , byte registerAddr , int readByteNum ) {
 
     Wire.beginTransmission ( deviceAddr );  // 読み出すデバイスのスレーブアドレスを指定
     Wire.write ( registerAddr );            // 読み出すレジスタの開始地点の書き込み
-    Wire.endTransmission( false );          // 通信を一旦終了
+    Wire.endTransmission ( false );         // 通信を一旦終了
 
     Wire.requestFrom ( deviceAddr , readByteNum );  // データの要求
     // 読み込むデータがなくなるまで値を読む
@@ -90,20 +102,27 @@ void writeI2C ( byte deviceAddr , byte registerAddr , byte value ) {
     Wire.endTransmission ();                // 通信の終了
 }
 
+/*****************
+ * SPI setup,R/W
+ *****************/
+// 接続ピン
+#define SCK 13
+#define MOSI 11
+#define MISO 12
+#define SS 10
+
 /**
  * 関数名: setup_SPI
  * 処理: SPI通信の初期化処理
- * 引数: sck, mosi, miso, ss : スレーブデバイスの各通信用ピン，spiMode : SPI通信のモード
+ * 引数: sck, mosi, miso : スレーブデバイスの各通信用ピン，spiMode : SPI通信のモード
  * 返り血 : なし
 */
-void setup_SPI ( int sck , int mosi , int miso , int ss , byte spiMode ) {
+void setup_SPI ( int sck , int mosi , int miso , byte spiMode ) {
 
     // 各ピン設定
     pinMode ( sck , OUTPUT );
     pinMode ( mosi , OUTPUT );
     pinMode ( miso , INPUT );
-    pinMode ( ss , OUTPUT );
-    digitalWrite ( ss , HIGH );
 
     SPI.begin ();  // SPI通信の初期化
 
@@ -139,7 +158,7 @@ void setup_SPI ( int sck , int mosi , int miso , int ss , byte spiMode ) {
  * 引数: SS: スレーブデバイス識別線，registerAddr: レジスタアドレス，value: 書き込む値
  * 返り血 : なし
 */
-void writeSPI(int ss, byte registerAddr, byte value) {
+void writeSPI ( int ss , byte registerAddr , byte value ) {
 
     digitalWrite ( ss , LOW );      // 通信の開始
     SPI.transfer ( registerAddr );  // 書き込むレジスタのアドレス
@@ -153,24 +172,26 @@ void writeSPI(int ss, byte registerAddr, byte value) {
  * 引数: ss: 信号線，registerAddr: レジスタアドレス，len: 読み出す長さ
  * 返り血 : なし
 */
-byte readSPIbuf [ 6 ];
+byte readSPIbuf [ readSPI_maxByteNum ];
 void readSPI ( int ss , byte registerAddr , int len ) {
 
-    char addr = 0x80 | registerAddr;  // 書き込みフラグを立てる
+    char addr = 0x80 | registerAddr;  // 書き込みフラグを立てる(0b10000000)
     // 複数バイト読み出す場合
-    if(len > 1) {
-        addr = addr | 0x40;  // 複数バイトフラグを立てる
+    if ( len > 1 ) {
+
+        addr = addr | 0x40;  // 複数バイトフラグを立てる(0b1000000)
     }
+
     digitalWrite ( ss , LOW );  // 通信の開始
     SPI.transfer ( addr );  // 読み出すレジスタのアドレス
     // 値を読み出す
     for ( int i = 0; i < len; i++ ) {
+
         readSPIbuf [ i ] = SPI.transfer ( 0x00 );  // 読み出したデータを格納
     }
+
     digitalWrite ( ss , HIGH );  // 通信の終了
 }
-
-
 
 
 /*****************
