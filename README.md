@@ -29,5 +29,15 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtsusemiUltimate-of-the-darkness/Arduino_library/tree/v0.0.1">version 0.0.1</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        I2C通信読み出した値を返り値とする関数作成
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>

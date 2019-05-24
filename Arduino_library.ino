@@ -1,13 +1,20 @@
 /**
- * ファイル名: functionLibrary
+ * ファイル名: Arudino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2018-11-21
- * バージョン: 0.0.0
+ * 最終更新日: 2019-3-22
+ * バージョン: 0.0.1
  *
  * 機能
- *   I2C通信でレジスタの読み書きが可能
- *   9軸センサ(MPU-9250)の加速度，温度が取得可能
+ *   通信系
+ *     I2C R/W
+ *   センサ系
+ *     MPU-9250
+ *
  * 更新履歴
+ *   v0.0.0
+ *     9軸センサ(MPU9250)の加速度，温度を取得する
+ *   v0.0.1
+ *     I2C通信読み出す際の一時格納データを返り血とした．
  */
 #include < Wire.h >
 /**
@@ -37,26 +44,30 @@ void loop () {
 
 /**
  * 関数名 : readI2C
- * 引数 : DEVICE_ADDR : スレーブデバイスアドレス, REGISTER_ADDR : 読み込む最初のレジスタアドレス, num : 読み込むビット数, accelTempGyro_buffer : 読み込んだ値を格納する配列
+ * 引数 : DEVICE_ADDR : スレーブデバイスアドレス, REGISTER_ADDR : 読み込む最初のレジスタアドレス, num : 読み込むバイト数
  * 処理 : 特定のスレーブデバイスから指定されたレジスタの値を読み込む
- * 返り血 : なし
+ * 返り血 : buffer : 読み出したデータ
  */
-void readI2C ( byte DEVICE_ADDR , byte REGISTER_ADDR , int num , byte accelTempGyro_buffer [] ) {
+void readI2C ( byte DEVICE_ADDR , byte REGISTER_ADDR , int num ) {
+
+    byte buffer [];
 
     Wire.beginTransmission ( DEVICE_ADDR );  // DEVICE_ADDRで指定したスレーブデバイスに送信処理を始める
     Wire.write ( REGISTER_ADDR );            // レジスタアドレスを書き込む(Wire.requestFrom()にかかる)
-    Wire.endTransmission ();                 // スレーブデバイス(ADXL312)に対する送信を完了(返り血あり)
+    Wire.endTransmission ();                 // スレーブデバイスに対する送信を完了(返り血あり)
     Wire.beginTransmission ( DEVICE_ADDR );  // DEVICE_ADDRで指定したスレーブデバイスに送信処理を始める
-    Wire.requestFrom ( DEVICE_ADDR , num );  //DEVICE_ADDRのスレーブデバイスのREGISTER_ADDRからnumビットデータを読む
+    Wire.requestFrom ( DEVICE_ADDR , num );  // DEVICE_ADDRのスレーブデバイスのREGISTER_ADDRからnumバイトデータを読む
 
     int i = 0;
     // スレーブデバイスからのデータを格納
     while ( Wire.available () ) {
 
-        accelTempGyro_buffer [ i++ ] = Wire.read ();
+        buffer [ i++ ] = Wire.read ();  // 読み出したデータを配列に格納
     }
 
-    Wire.endTransmission ();  // スレーブデバイス(ADXL312)に対する送信を完了(返り血あり)
+    Wire.endTransmission ();  // スレーブデバイスに対する送信を完了(返り血あり)
+
+    return buffer;  // 読み出したデータを返す
 }
 
 /**
@@ -70,8 +81,9 @@ void writeI2C ( uint8_t DEVICE_ADDR , uint8_t REGISTER_ADDR , uint8_t value ) {
     Wire.beginTransmission ( DEVICE_ADDR );  // DEVICE_ADDRで指定したスレーブデバイスに送信処理を始める
     Wire.write ( REGISTER_ADDR );            // レジスタアドレスを書き込む
     Wire.write ( value );                    // 送信するデータをキューに入れる
-    Wire.endTransmission ();                 // スレーブデバイス(ADXL312)に対する送信を完了(返り血あり)
+    Wire.endTransmission ();                 // スレーブデバイスに対する送信を完了(返り血あり)
 }
+
 
 
 /*****************
