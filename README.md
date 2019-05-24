@@ -97,5 +97,18 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.3.0">version 1.3.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        SPI通信初期化関数の引数のスレーブセレクトピン除外
+                    </li>
+                    <li>
+                        SPI通信での信号ピンをマクロで定義
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>

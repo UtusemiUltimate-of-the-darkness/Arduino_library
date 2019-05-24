@@ -2,7 +2,7 @@
  * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
  * 最終更新日: 2019-4-19
- * バージョン: 1.2.1
+ * バージョン: 1.3.0
  *
  * 機能
  *   通信系
@@ -12,6 +12,9 @@
  *     MPU-9250
  *
  * 更新履歴
+ *   v0.0.0
+ *     9軸センサ(MPU9250)の加速度取得関数作成
+ *     9軸センサ(MPU9250)の温度取得関数作成
  *   v0.0.1
  *     I2C通信読み出す際の一時格納データを返り血とした．
  *   v1.0.0
@@ -25,6 +28,9 @@
  *   v1.2.1
  *     SPI通信初期化関数の引数変更
  *     可読性の向上
+ *   v1.3.0
+ *     SPI通信初期化関数のスレーブ識別線除外
+ *     接続ピンをマクロで設定
 */
 
 // ライブラリをインクルード
@@ -106,21 +112,24 @@ void writeI2C ( byte deviceAddr , byte registerAddr , byte value ) {
 /*****************
  * SPI setup,R/W
  *****************/
+// 接続ピン
+#define SCK 13
+#define MOSI 11
+#define MISO 12
+#define SS 10
 
 /**
  * 関数名: setup_SPI
  * 処理: SPI通信の初期化処理
- * 引数: sck, mosi, miso, ss : スレーブデバイスの各通信用ピン，spiMode : SPI通信のモード
+ * 引数: sck, mosi, miso : スレーブデバイスの各通信用ピン，spiMode : SPI通信のモード
  * 返り血 : なし
 */
-void setup_SPI ( int sck , int mosi , int miso , int ss , byte spiMode ) {
+void setup_SPI ( int sck , int mosi , int miso , byte spiMode ) {
 
     // 各ピン設定
     pinMode ( sck , OUTPUT );
     pinMode ( mosi , OUTPUT );
     pinMode ( miso , INPUT );
-    pinMode ( ss , OUTPUT );
-    digitalWrite ( ss , HIGH );
 
     SPI.begin ();  // SPI通信の初期化
 
@@ -170,7 +179,7 @@ void writeSPI ( int ss , byte registerAddr , byte value ) {
  * 引数: ss: 信号線，registerAddr: レジスタアドレス，len: 読み出す長さ
  * 返り血 : なし
 */
-byte readSPIbuf [ 6 ];
+byte readSPIbuf [ readSPI_maxByteNum ];
 void readSPI ( int ss , byte registerAddr , int len ) {
 
     char addr = 0x80 | registerAddr;  // 書き込みフラグを立てる(0b10000000)
