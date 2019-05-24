@@ -1,8 +1,8 @@
 /**
- * ファイル名: selfFuncLib_v1.4.0.ino
+ * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
  * 最終更新日: 2019-4-19
- * バージョン: 1.4.0
+ * バージョン: 1.5.0
  *
  * 機能
  *   通信系
@@ -31,12 +31,17 @@
  *   v1.4.0
  *     MPU9250温度取得関数返り血の設定
  *     ADXL345SPI通信での加速度取得関数追加
+ *   v1.5.0
+ *     ADXL345 I2C通信での加速度取得関数の追加
+ *     ADXL345 加速度に直す式の改良
+ *     「SPI.begin()」の除外
 */
 
 // ライブラリをインクルード
 #include <Wire.h>  // I2C通信に関するライブラリ
 #include <SPI.h>   // SPI通信に関するライブラリ
 #include <math.h>  // 算術ライブラリ
+
 /**
  * 関数名: setup
  * 引数: なし
@@ -81,8 +86,7 @@ void loop () {
 byte readI2Cbuf [ readI2C_maxByteNum ];  // I2C通信で読み出す最大データ数の指定
 void readI2C ( byte deviceAddr , byte registerAddr , int readByteNum ) {
 
-    // byte readI2Cbuf [ readByteNum ];  // 読み込んだ値を格納する配列
-    int8_t i = 0;              // 配列の添字
+    int8_t i = 0;  // 配列の添字
 
     Wire.beginTransmission ( deviceAddr );  // 読み出すデバイスのスレーブアドレスを指定
     Wire.write ( registerAddr );            // 読み出すレジスタの開始地点の書き込み
@@ -130,8 +134,6 @@ void setup_SPI ( int sck , int mosi , int miso , byte spiMode ) {
     pinMode ( sck , OUTPUT );
     pinMode ( mosi , OUTPUT );
     pinMode ( miso , INPUT );
-
-    SPI.begin ();  // SPI通信の初期化
 
     // spi通信モードの設定
     switch ( spiMode ) {
@@ -386,13 +388,58 @@ void get_AK8963Comp () {
     AK8963CompZ = float ( cz ) * AK8963CompZ_Sensitiv;
 }
 
+
 /*****************
- * 3軸デジタル加速度センサSPI(ADXL345)
+ * 3軸デジタル加速度センサI2C(ADXL345)
 *****************/
+// スレーブアドレス
+// #define ADXL345_SDO_HIGH ( 0x1D )  // ADXL345スレーブアドレス(SDO=HIGH)
+// #define ADXL345_SDO_LOW ( 0x53 )   // ADXL345スレーブアドレス(SDO=LOW)
+#define ADXL345 ( 0x53 )           // ADXL345スレーブアドレス(SDO=LOW)
+
 // ADXL345レジスタ類
 #define ADXL345_DATA_FORMAT_ADDR ( 0x31 )  // データフォーマットのレジスタアドレス
 #define ADXL345_POWER_CTL_ADDR ( 0x2D )    // パワーコントロールレジスタのアドレス
 #define ADXL345_FIRST_DATA_ADDR ( 0x32 )   // 加速度データが格納されているレジスタの先頭
+
+/**
+ * 関数名 : setup_ADXL345_I2C
+ * 引数 : なし
+ * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
+ * 返り値 : なし
+*/
+void setup_ADXL345_I2C () {
+
+    writeI2C ( ADXL345 , ADXL345_DATA_FORMAT_ADDR , 0x08 );  // データフォーマットの設定
+    writeI2C ( ADXL345 , ADXL345_POWER_CTL_ADDR , 0x08 );    // 電源管理
+}
+
+/**
+ * 関数名 : setup_ADXL345_I2C
+ * 引数 : なし
+ * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
+ * 返り値 : なし
+*/
+float ADXL345AccelXG , ADXL345AccelYG , ADXL345AccelZG;  // 加速度G
+void get_ADXL345_I2C () {
+
+    readI2C ( ADXL345 , ADXL345_FIRST_DATA_ADDR , 6 );  // 値を読み込む
+
+    // 各軸のデータに直す
+    int16_t x = readI2Cbuf [ 1 ] << 8 | readI2Cbuf [ 0 ];
+    int16_t y = readI2Cbuf [ 3 ] << 8 | readI2Cbuf [ 2 ];
+    int16_t z = readI2Cbuf [ 5 ] << 8 | readI2Cbuf [ 4 ];
+
+    // 加速度に直す
+    ADXL345AccelXG = ( float ) x / pow ( 2 , 8 );
+    ADXL345AccelYG = ( float ) y / pow ( 2 , 8 );
+    ADXL345AccelZG = ( float ) z / pow ( 2 , 8 );
+}
+
+
+/*****************
+ * 3軸デジタル加速度センサSPI(ADXL345)
+*****************/
 
 // ADXL345スレーブ識別ピン
 #define ADXL345_SS 10
@@ -420,8 +467,7 @@ void setup_ADXL345_SPI ( int ss ) {
 float ADXL345AccelXG , ADXL345AccelYG , ADXL345AccelZG;  // 加速度G
 void get_ADXL345_SPI ( int ss ) {
 
-    int readByteNum = 6;  // 読み込むバイト数
-    readSPI ( ss , ADXL345_FIRST_DATA_ADDR , readByteNum );  // 加速度データを読み込み
+    readSPI ( ss , ADXL345_FIRST_DATA_ADDR , 6 );  // 加速度データを読み込み
 
     // 各軸のデータに直す
     int16_t x = ( ( int16_t ) readSPIbuf [ 1 ] << 8 ) | readSPIbuf [ 0 ];
@@ -429,7 +475,7 @@ void get_ADXL345_SPI ( int ss ) {
     int16_t z = ( ( int16_t ) readSPIbuf [ 5 ] << 8 ) | readSPIbuf [ 4 ];
 
     // 加速度Gに直す
-    ADXL345AccelXG = x * pow ( 2 , 5 ) / pow ( 2 , 13 );
-    ADXL345AccelYG = y * pow ( 2 , 5 ) / pow ( 2 , 13 );
-    ADXL345AccelZG = z * pow ( 2 , 5 ) / pow ( 2 , 13 );
+    ADXL345AccelXG = x / pow ( 2 , 8 );
+    ADXL345AccelYG = y / pow ( 2 , 8 );
+    ADXL345AccelZG = z / pow ( 2 , 8 );
 }
