@@ -1,15 +1,16 @@
 /**
  * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2019-4-19
- * バージョン: 1.6.0
+ * 最終更新日: 2019-4-22
+ * バージョン: 1.6.1
  *
  * 機能
  *   通信系
  *     I2C R/W
- *     SPI R/W
+ *     SPI setup R/W
  *   センサ系
- *     MPU-9250
+ *     MPU-9250(I2C)
+ *     ADXL345(I2C, SPI)
  *
  * 更新履歴
  *   v0.0.0
@@ -36,7 +37,9 @@
  *     ADXL345 加速度に直す式の改良
  *     「SPI.begin()」の除外
  *   v1.6.0
- *     9軸センサ(MPU-9250)の地磁気測定モードの追加
+ *     ADXL345 SPI通信で加速度取得関数の追加
+ *   v1.6.1
+ *     9軸センサ各センサ感度記述法改良
 */
 
 // ライブラリをインクルード
@@ -261,43 +264,48 @@ void setup_MPU9250 ( int AK8963Mode ) {
     Serial.println ( readI2Cbuf [ 0 ] , HEX );
 
     // 加速度感度の設定
-    if ( MPU9250AccelRange == 0x00 ) {
+    switch ( MPU9250AccelRange ) {
 
-        MPU9250AccelSensitiv = pow ( 2 , 2 ) / pow ( 2 , 16 );
+        case 0x00 :
+            MPU9250AccelSensitiv = pow ( 2 , 2 ) / pow ( 2 , 16 );
+            break;
 
-    } else if ( MPU9250AccelRange == 0x08 ) {
+        case 0x08 :
+            MPU9250AccelSensitiv = pow ( 2 , 3 ) / pow ( 2 , 16 );
+            break;
 
-        MPU9250AccelSensitiv = pow ( 2 , 3 ) / pow ( 2 , 16 );
+        case 0x10 :
+            MPU9250AccelSensitiv = pow ( 2 , 4 ) / pow ( 2 , 16 );
+            break;
 
-    } else if ( MPU9250AccelRange == 0x10 ) {
+        case 0x18 :
+            MPU9250AccelSensitiv = pow ( 2 , 5 ) / pow ( 2 , 16 );
+            break;
 
-        MPU9250AccelSensitiv = pow ( 2 , 4 ) / pow ( 2 , 16 );
-
-    } else if ( MPU9250AccelRange == 0x08 ) {
-
-        MPU9250AccelSensitiv = pow ( 2 , 5 ) / pow ( 2 , 16 );
+        default :
+            MPU9250AccelSensitiv = pow ( 2 , 2 ) / pow ( 2 , 16 );
     }
 
-    // switch ( MPU9250AccelRange ) {
-    //     case /* value */:
-    // }
-
     // 角速度感度の設定
-    if ( MPU9250GyroRange == 0x00 ) {
+    switch ( MPU9250GyroRange ) {
+        case 0x00 :
+            MPU9250GyroSensitiv = 500 * pow ( 2 , 0 ) / pow ( 2 , 16 );
+            break;
 
-        MPU9250GyroSensitiv = 500 * pow ( 2 , 0 ) / pow ( 2 , 16 );
+        case 0x08 :
+            MPU9250GyroSensitiv = 500 * pow ( 2 , 1 ) / pow ( 2 , 16 );
+            break;
 
-    } else if ( MPU9250GyroRange == 0x08 ) {
+        case 0x10 :
+            MPU9250GyroSensitiv = 500 * pow ( 2 , 2 ) / pow ( 2 , 16 );
+            break;
 
-        MPU9250GyroSensitiv = 500 * pow ( 2 , 1 ) / pow ( 2 , 16 );
+        case 0x18 :
+            MPU9250GyroSensitiv = 500 * pow ( 2 , 3 ) / pow ( 2 , 16 );
+            break;
 
-    } else if ( MPU9250GyroRange == 0x10 ) {
-
-        MPU9250GyroSensitiv = 500 * pow ( 2 , 2 ) / pow ( 2 , 16 );
-
-    } else if ( MPU9250GyroRange == 0x08 ) {
-
-        MPU9250GyroSensitiv = 500 * pow ( 2 , 3 ) / pow ( 2 , 16 );
+        default :
+            MPU9250GyroSensitiv = 500 * pow ( 2 , 0 ) / pow ( 2 , 16 );
     }
 
     // 測定モード設定
