@@ -11,7 +11,13 @@
             I2C通信読み書き
         </li>
         <li>
-            9軸センサ(MPU9250)の加速度，角速度，コンパス，温度の取得
+            SPI通信の初期化，読み書き
+        </li>
+        <li>
+            9軸センサ(MPU9250)の加速度，角速度，コンパス，温度の取得(I2C)
+        </li>
+        <li>
+            9軸センサ(MPU9250)の加速度，角速度，コンパス，温度の取得(I2C/SPI)
         </li>
     </ul>
 </div>
@@ -54,6 +60,19 @@
                     </li>
                     <li>
                         加速度，角速度，コンパス，温度取得関数記述
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.1.0">version 1.1.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        SPI通信の初期化，読み書き関数の追加
+                    </li>
+                    <li>
+                        9軸センサ(MPU9250)の加速度，角速度，コンパス，温度をI2C，SPI通信で取得可能
                     </li>
                 </ul>
             </div>

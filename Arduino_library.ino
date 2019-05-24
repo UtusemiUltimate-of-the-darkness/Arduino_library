@@ -1,22 +1,27 @@
 /**
  * ファイル名: Arduino_library.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2019-3-22
- * バージョン: 1.0.0
+ * 最終更新日: 2019-4-2
+ * バージョン: 1.1.0
  *
  * 機能
  *   通信系
  *     I2C R/W
+ *     SPI R/W
  *   センサ系
  *     MPU-9250
  *
  * 更新履歴
+ *   v0.0.0
+ *     9軸センサ(MPU9250)の加速度，温度を取得する
  *   v0.0.1
  *     I2C通信読み出す際の一時格納データを返り血とした．
  *   v1.0.0
  *     記述の整理
  *     I2C通信の読み書きの関数の改良
  *     9軸センサMPU-9250の各データの読み込み関数の記述
+ *   v1.1.0
+ *     SPI通信の記述
 */
 
 // ライブラリをインクルード
@@ -84,6 +89,88 @@ void writeI2C ( byte deviceAddr , byte registerAddr , byte value ) {
     Wire.write ( value );                   // 値を書き込む
     Wire.endTransmission ();                // 通信の終了
 }
+
+/**
+ * 関数名: setup_SPI
+ * 処理: SPI通信の初期化処理
+ * 引数: sck, mosi, miso, ss : スレーブデバイスの各通信用ピン，spiMode : SPI通信のモード
+ * 返り血 : なし
+*/
+void setup_SPI ( int sck , int mosi , int miso , int ss , byte spiMode ) {
+
+    // 各ピン設定
+    pinMode ( sck , OUTPUT );
+    pinMode ( mosi , OUTPUT );
+    pinMode ( miso , INPUT );
+    pinMode ( ss , OUTPUT );
+    digitalWrite ( ss , HIGH );
+
+    SPI.begin ();  // SPI通信の初期化
+
+    // spi通信モードの設定
+    switch ( spiMode ) {
+        case 0x00 :
+            SPI.setDataMode ( SPI_MODE0 );
+            break;
+
+        case 0x01 :
+            SPI.setDataMode ( SPI_MODE1 );
+            break;
+
+        case 0x02 :
+            SPI.setDataMode ( SPI_MODE2 );
+            break;
+
+        case 0x03 :
+            SPI.setDataMode ( SPI_MODE3 );
+            break;
+
+        default :
+            SPI.setDataMode ( SPI_MODE3 );
+            break;
+    }
+
+    SPI.setBitOrder ( MSBFIRST );
+}
+
+/**
+ * 関数名: writeSPI
+ * 処理: スレーブデバイスに書き込み
+ * 引数: SS: スレーブデバイス識別線，registerAddr: レジスタアドレス，value: 書き込む値
+ * 返り血 : なし
+*/
+void writeSPI(int ss, byte registerAddr, byte value) {
+
+    digitalWrite ( ss , LOW );      // 通信の開始
+    SPI.transfer ( registerAddr );  // 書き込むレジスタのアドレス
+    SPI.transfer ( value );         // 書き込む値
+    digitalWrite ( ss , HIGH );     // 通信の終了
+}
+
+/**
+ * 関数名: readSPI
+ * 処理: スレーブデバイスから値の読み出し
+ * 引数: ss: 信号線，registerAddr: レジスタアドレス，len: 読み出す長さ
+ * 返り血 : なし
+*/
+byte readSPIbuf [ 6 ];
+void readSPI ( int ss , byte registerAddr , int len ) {
+
+    char addr = 0x80 | registerAddr;  // 書き込みフラグを立てる
+    // 複数バイト読み出す場合
+    if(len > 1) {
+        addr = addr | 0x40;  // 複数バイトフラグを立てる
+    }
+    digitalWrite ( ss , LOW );  // 通信の開始
+    SPI.transfer ( addr );  // 読み出すレジスタのアドレス
+    // 値を読み出す
+    for ( int i = 0; i < len; i++ ) {
+        readSPIbuf [ i ] = SPI.transfer ( 0x00 );  // 読み出したデータを格納
+    }
+    digitalWrite ( ss , HIGH );  // 通信の終了
+}
+
+
 
 
 /*****************
