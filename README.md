@@ -139,5 +139,15 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.5.1">version 1.5.1</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        マージ不能のため新ブランチ作成
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>
