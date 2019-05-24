@@ -87,5 +87,18 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.2.1">version 1.2.1</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        SPI通信初期化関数の引数にスレーブセレクトピン追加
+                    </li>
+                    <li>
+                        コードの整理で可読性の向上
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>
