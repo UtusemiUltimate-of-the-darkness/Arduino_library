@@ -110,5 +110,18 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.4.0">version 1.4.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        9軸センサ(MPU9250)の温度取得関数の返り値設定
+                    </li>
+                    <li>
+                        3軸加速度センサ(ADXL345)でのSPI通信用関数追加
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>

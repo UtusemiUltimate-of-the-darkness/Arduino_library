@@ -1,8 +1,8 @@
 /**
- * ファイル名: Arduino_library.ino
+ * ファイル名: selfFuncLib_v1.4.0.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
  * 最終更新日: 2019-4-19
- * バージョン: 1.3.0
+ * バージョン: 1.4.0
  *
  * 機能
  *   通信系
@@ -23,18 +23,19 @@
  *     9軸センサMPU-9250の各データの読み込み関数の記述
  *   v1.1.0
  *     SPI通信の記述
- *   v1.2.0
- *     serialEvent関数の追加
  *   v1.2.1
- *     SPI通信初期化関数の引数変更
  *     可読性の向上
  *   v1.3.0
  *     SPI通信初期化関数のスレーブ識別線除外
  *     接続ピンをマクロで設定
+ *   v1.4.0
+ *     MPU9250温度取得関数返り血の設定
+ *     ADXL345SPI通信での加速度取得関数追加
 */
 
 // ライブラリをインクルード
 #include <Wire.h>  // I2C通信に関するライブラリ
+#include <SPI.h>   // SPI通信に関するライブラリ
 #include <math.h>  // 算術ライブラリ
 /**
  * 関数名: setup
@@ -116,7 +117,6 @@ void writeI2C ( byte deviceAddr , byte registerAddr , byte value ) {
 #define SCK 13
 #define MOSI 11
 #define MISO 12
-#define SS 10
 
 /**
  * 関数名: setup_SPI
@@ -326,18 +326,19 @@ void get_MPU9250Accel () {
  * 関数名 : get_MPU9250Temp
  * 引数 :  なし
  * 処理 : MPU9250から内部温度を取得
- * 返り血 : なし
+ * 返り血 : MPU9250Temp : 温度deg
  */
-float MPU9250Temp;  // 温度deg
-void get_MPU9250Temp () {
+float get_MPU9250Temp () {
 
     readI2C ( MPU9250 , 0x3B , 14 );  // 値を読み出す
 
     // 各軸のデータを生成
     int16_t t = readI2Cbuf [ 6 ] << 8 | readI2Cbuf [ 7 ];
 
-    // 角速度に直す
-    MPU9250Temp = float ( t ) / 333.87 + 21.0;
+    // 温度に直す
+    float MPU9250Temp = float ( t ) / 333.87 + 21.0;
+
+    return MPU9250Temp;  // 温度を返す
 }
 
 
@@ -383,4 +384,52 @@ void get_AK8963Comp () {
     AK8963CompX = float ( cx ) * AK8963CompX_Sensitiv;
     AK8963CompY = float ( cy ) * AK8963CompY_Sensitiv;
     AK8963CompZ = float ( cz ) * AK8963CompZ_Sensitiv;
+}
+
+/*****************
+ * 3軸デジタル加速度センサSPI(ADXL345)
+*****************/
+// ADXL345レジスタ類
+#define ADXL345_DATA_FORMAT_ADDR ( 0x31 )  // データフォーマットのレジスタアドレス
+#define ADXL345_POWER_CTL_ADDR ( 0x2D )    // パワーコントロールレジスタのアドレス
+#define ADXL345_FIRST_DATA_ADDR ( 0x32 )   // 加速度データが格納されているレジスタの先頭
+
+// ADXL345スレーブ識別ピン
+#define ADXL345_SS 10
+
+/**
+ * 関数名 : setup_ADXL345_SPI
+ * 引数 : ss : スレーブ識別ピン
+ * 処理 : 3軸加速度センサADXL345の初期設定(SPI通信)
+ * 返り値 : なし
+*/
+void setup_ADXL345_SPI ( int ss ) {
+
+    // 測定レンジの設定
+    writeSPI ( ss , ADXL345_DATA_FORMAT_ADDR , 0x08 );  // 測定レンジ +-2g，烏賊同じ
+    // POWER_TCL(節電機能の設定)
+    writeSPI ( ss , ADXL345_POWER_CTL_ADDR , 0x08 );    // 測定モード，烏賊同じ
+}
+
+/**
+ * 関数名 : get_ADXL345_SPI
+ * 引数 : ss : スレーブ識別ピン
+ * 処理 : 3軸加速度センサADXL345から加速度を取得
+ * 返り値 : なし
+*/
+float ADXL345AccelXG , ADXL345AccelYG , ADXL345AccelZG;  // 加速度G
+void get_ADXL345_SPI ( int ss ) {
+
+    int readByteNum = 6;  // 読み込むバイト数
+    readSPI ( ss , ADXL345_FIRST_DATA_ADDR , readByteNum );  // 加速度データを読み込み
+
+    // 各軸のデータに直す
+    int16_t x = ( ( int16_t ) readSPIbuf [ 1 ] << 8 ) | readSPIbuf [ 0 ];
+    int16_t y = ( ( int16_t ) readSPIbuf [ 3 ] << 8 ) | readSPIbuf [ 2 ];
+    int16_t z = ( ( int16_t ) readSPIbuf [ 5 ] << 8 ) | readSPIbuf [ 4 ];
+
+    // 加速度Gに直す
+    ADXL345AccelXG = x * pow ( 2 , 5 ) / pow ( 2 , 13 );
+    ADXL345AccelYG = y * pow ( 2 , 5 ) / pow ( 2 , 13 );
+    ADXL345AccelZG = z * pow ( 2 , 5 ) / pow ( 2 , 13 );
 }
