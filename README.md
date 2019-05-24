@@ -123,5 +123,21 @@
                 </ul>
             </div>
         </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v1.5.0">version 1.5.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        3軸加速度センサ(ADXL345)I2C通信用関数追加
+                    </li>
+                    <li>
+                        シリアルモニタ初期化関数の除外
+                    </li>
+                    <li>
+                        3軸加速度センサ(ADXL345)加速度算出式の改良
+                    </li>
+                </ul>
+            </div>
+        </li>
     </ul>
 </div>
