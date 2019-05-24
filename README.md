@@ -17,7 +17,7 @@
     <h3>バージョン履歴</h3>
     <ul>
         <li>
-            <h4><a href="https://github.com/UtsusemiUltimate-of-the-darkness/Arduino_library/tree/v0.0.0">version 0.0.0</a></h4>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v0.0.0">version 0.0.0</a></h4>
             <div>
                 <ul>
                     <li>
@@ -30,7 +30,7 @@
             </div>
         </li>
         <li>
-            <h4><a href="https://github.com/UtsusemiUltimate-of-the-darkness/Arduino_library/tree/v0.0.1">version 0.0.1</a></h4>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v0.0.1">version 0.0.1</a></h4>
             <div>
                 <ul>
                     <li>
