@@ -8,13 +8,25 @@
 <h3>できること</h3>
     <ul>
         <li>
-            I2C通信読み書き
+            I2C通信の初期化，読み書き
         </li>
         <li>
             SPI通信の初期化，読み書き
         </li>
         <li>
-            9軸センサ(MPU9250)の加速度，角速度，コンパス，温度の取得(I2C/SPI)
+            9軸センサ ( MPU9250 ) での加速度，角速度，コンパス，温度の取得 ( I2C )
+        </li>
+        <li>
+            3軸加速度センサ ( ADXL345 ) での加速度取得 ( I2C / SPI )
+        </li>
+        <li>
+            アナログ温度センサ ( LM61BIZ ) での温度取得
+        </li>
+        <li>
+            アナログ湿度センサ ( HIH4030 ) での湿度取得
+        </li>
+        <li>
+            CdSセル ( 暗抵抗1MΩ ) での照度取得
         </li>
     </ul>
 </div>
@@ -165,6 +177,25 @@
                 <ul>
                     <li>
                         9軸センサ各センサ感度記述法改良
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v2.0.0">version 2.0.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        各センサ毎にファイル分け
+                    </li>
+                    <li>
+                        アナログ温度センサ ( LM61BIZ ) の追加
+                    </li>
+                    <li>
+                        アナログ湿度センサ ( HIH4030 ) の追加
+                    </li>
+                    <li>
+                        CdSセルの追加
                     </li>
                 </ul>
             </div>

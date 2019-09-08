@@ -1,16 +1,19 @@
 /**
- * ファイル名: Arduino_library.ino
+ * ファイル名: all.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2019-4-22
- * バージョン: 1.6.1
+ * 最終更新日: 2019/9/8
+ * バージョン: 2.0.0
  *
  * 機能
  *   通信系
  *     I2C R/W
- *     SPI setup R/W
+ *     SPI R/W
  *   センサ系
  *     MPU-9250(I2C)
  *     ADXL345(I2C, SPI)
+ *     LM61BIZ
+ *     HIH4030
+ *     CdSセル
  *
  * 更新履歴
  *   v0.0.0
@@ -40,6 +43,8 @@
  *     ADXL345 SPI通信で加速度取得関数の追加
  *   v1.6.1
  *     9軸センサ各センサ感度記述法改良
+ *   v2.0.0
+ *     各センサ毎にファイル分け
 */
 
 // ライブラリをインクルード
@@ -208,7 +213,7 @@ void readSPI ( int ss , byte registerAddr , int len ) {
 
 
 /*****************
- * 9軸センサ(MPU-9250)
+ * 9軸センサ ( MPU-9250 )
 *****************/
 // デバイスのスレーブアドレス
 #define MPU9250 ( 0x69 )  // 加速度，角速度
@@ -419,7 +424,7 @@ void get_AK8963Comp () {
 
 
 /*****************
- * 3軸デジタル加速度センサI2C(ADXL345)
+ * 3軸デジタル加速度センサI2C ( ADXL345 )
 *****************/
 // スレーブアドレス
 // #define ADXL345_SDO_HIGH ( 0x1D )  // ADXL345スレーブアドレス(SDO=HIGH)
@@ -467,7 +472,7 @@ void get_ADXL345_I2C () {
 
 
 /*****************
- * 3軸デジタル加速度センサSPI(ADXL345)
+ * 3軸デジタル加速度センサSPI ( ADXL345 )
 *****************/
 
 // ADXL345スレーブ識別ピン
@@ -507,4 +512,60 @@ void get_ADXL345_SPI ( int ss ) {
     ADXL345AccelXG = x / pow ( 2 , 8 );
     ADXL345AccelYG = y / pow ( 2 , 8 );
     ADXL345AccelZG = z / pow ( 2 , 8 );
+}
+
+/*****************
+ * 温度センサ ( LM61BIZ )
+*****************/
+/**
+ * 関数名 : LM61BIZ
+ * 引数 : analogPin : HIH4030が接続されているピン番号
+ * 処理 : 温度を取得
+ * 返り値 : temp : 温度 [ deg ]
+*/
+float LM61BIZ ( int analogPin ) {
+
+    int aIn = analogRead ( analogPin );  // センサ出力値読み込み
+
+    float tempDeg = ( float ) aIn * 500.0 / 1023.0 - 60.0;  // 温度を計算
+
+    return tempDeg;  // 温度を返す
+}
+
+/*****************
+ * 湿度センサ ( HIH4030 )
+*****************/
+/**
+ * 関数名 : HIH4030
+ * 引数 : analogPin : HIH4030が接続されているピン番号
+ * 処理 : 湿度を取得
+ * 返り値 : hum : 湿度 [ % ]
+*/
+float HIH4030 ( int analogPin ) {
+
+    int aIn = analogRead ( analogPin );  // センサ出力値読み込み
+
+    float hum = ( aIn / 1023.0 ) / 0.0062 - 0.16;  // 湿度に直す
+
+    return hum;  // 湿度を返す
+}
+
+/*****************
+ * 照度センサ ( CdSセル1Mohm )
+*****************/
+/**
+ * 関数名 : CdS1M
+ * 引数 : analogPin : HIH4030が接続されているピン番号
+ * 処理 : 照度を取得
+ * 返り値 : lx : 湿度 [ lux ]
+*/
+float CdS1M ( int analogPin ) {
+
+    int aIn = analogRead ( analogPin );  // センサ出力値読み込み
+    float volt = val2 * 5.0 / 1023.0 ;  // 電圧に直す
+    float resister = 10000 * volt / ( 5.0 - volt );  // 抵抗値を計算
+
+    float lx = 4050000 * pow ( resister , -1.34 );  // 照度に直す
+
+    return lx;  // 湿度を返す
 }
