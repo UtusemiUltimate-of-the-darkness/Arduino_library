@@ -1,7 +1,7 @@
 # Arduino_library
 
 <div>
-    Arduino自作ライブラリだよ．
+    Arduino自作関数まとめたよ．
 </div>
 
 <div>
