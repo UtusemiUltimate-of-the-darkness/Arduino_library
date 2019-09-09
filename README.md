@@ -20,13 +20,22 @@
             3軸加速度センサ ( ADXL345 ) での加速度取得 ( I2C / SPI )
         </li>
         <li>
+            3軸加速度センサ ( ADXL312 ) での加速度取得 ( I2C )
+        </li>
+        <li>
             アナログ温度センサ ( LM61BIZ ) での温度取得
+        </li>
+        <li>
+            アナログ温度センサ ( LM35 ) での温度取得
         </li>
         <li>
             アナログ湿度センサ ( HIH4030 ) での湿度取得
         </li>
         <li>
             CdSセル ( 暗抵抗1MΩ ) での照度取得
+        </li>
+        <li>
+            測距センサ ( GP2Y0A21YK ) での距離取得
         </li>
     </ul>
 </div>
@@ -196,6 +205,22 @@
                     </li>
                     <li>
                         CdSセルの追加
+                    </li>
+                </ul>
+            </div>
+        </li>
+        <li>
+            <h4><a href="https://github.com/UtusemiUltimate-of-the-darkness/Arduino_library/tree/v2.1.0">version 2.1.0</a></h4>
+            <div>
+                <ul>
+                    <li>
+                        3軸加速度センサ ( ADXL312 ) の追加
+                    </li>
+                    <li>
+                        アナログ測距センサ ( GP2Y0A21YK ) の追加
+                    </li>
+                    <li>
+                        アナログ温度センサ ( LM35 ) の追加
                     </li>
                 </ul>
             </div>

@@ -1,19 +1,20 @@
 /**
  * ファイル名: all.ino
  * 作成者: 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日: 2019/9/8
- * バージョン: 2.0.0
+ * 最終更新日: 2019/9/9
+ * バージョン: 2.1.0
  *
  * 機能
  *   通信系
  *     I2C R/W
  *     SPI R/W
  *   センサ系
- *     MPU-9250(I2C)
- *     ADXL345(I2C, SPI)
+ *     MPU-9250 ( I2C )
+ *     ADXL345 ( I2C , SPI )
  *     LM61BIZ
  *     HIH4030
  *     CdSセル
+ *     ADXL312 ( I2C )
  *
  * 更新履歴
  *   v0.0.0
@@ -45,6 +46,8 @@
  *     9軸センサ各センサ感度記述法改良
  *   v2.0.0
  *     各センサ毎にファイル分け
+ *   v2.1.0
+ *     3軸加速度センサ ( ADXL312 ) 追加
 */
 
 // ライブラリをインクルード
@@ -568,4 +571,50 @@ float CdS1M ( int analogPin ) {
     float lx = 4050000 * pow ( resister , -1.34 );  // 照度に直す
 
     return lx;  // 湿度を返す
+}
+
+/*****************
+ * 3軸デジタル加速度センサI2C ( ADXL312 )
+*****************/
+#define ADXL312 ( 0x53 )  // スレーブデバイスのアドレス(SDO/ALT グランド接続)
+#define ADXL312_FIRST_DATA_ADDR ( 0x32 )  // 加速度データ格納頭レジスタ
+
+/**
+ * 関数名 : setup_ADXL312_I2C
+ * 引数 : なし
+ * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
+ * 返り値 : なし
+*/
+void setup_ADXL312_I2C () {
+
+    writeI2C ( ADXL312 , 0x31 , 0x00 );  // DATA_FORMAT(レンジ設定)1.5G
+    // writeI2C ( ADXL312 , 0x31 , 0x01 );  // DATA_FORMAT(レンジ設定)3.0G
+    // writeI2C ( ADXL312 , 0x31 , 0x10 );  // DATA_FORMAT(レンジ設定)6.0G
+    // writeI2C ( ADXL312 , 0x31 , 0x11 );  // DATA_FORMAT(レンジ設定)12G
+    writeI2C ( ADXL312 , 0x2d , 0x08 );  // PWER_CTL
+}
+
+/**
+ * 関数名 : setup_ADXL345_I2C
+ * 引数 : なし
+ * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
+ * 返り値 : なし
+*/
+float ADXL312AccelXG , ADXL312AccelYG , ADXL312AccelZG;  // 加速度G
+void get_ADXL312_I2C () {
+
+    float resolution = 0.0029;  // 分解能
+
+    readI2C ( ADXL312 , ADXL312_FIRST_DATA_ADDR , 6 );  // 値を読み込む
+
+    // 加速度データを格納
+    int16_t x = ( ( ( int ) readI2Cbuf [ 1 ] ) << 8 ) | readI2Cbuf [ 0 ];
+    int16_t y = ( ( ( int ) readI2Cbuf [ 3 ] ) << 8 ) | readI2Cbuf [ 2 ];
+    int16_t z = ( ( ( int ) readI2Cbuf [ 5 ] ) << 8 ) | readI2Cbuf [ 4 ];
+
+    // 加速度に直す
+    ADXL312AccelXG = resolution * x;
+    ADXL312AccelYG = resolution * y;
+    ADXL312AccelZG = resolution * z;
+
 }
