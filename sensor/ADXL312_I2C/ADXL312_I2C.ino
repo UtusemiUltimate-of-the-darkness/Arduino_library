@@ -1,8 +1,8 @@
 /**
- * ファイル名 : ADXL345_I2C.ino
+ * ファイル名 : ADXL312_I2C.ino
  * 作成者 : 命を燃やせない死んでない闇の空蝉ultimate
- * 最終更新日 : 2019/9/8
- * バージョン : 2.0.0
+ * 最終更新日 : 2019/9/9
+ * バージョン : 2.1.0
  *
  * 更新履歴
  *   v0.0.0
@@ -34,21 +34,18 @@
  *     9軸センサ各センサ感度記述法改良
  *   v2.0.0
  *     センサ，通信機能ごとにファイル分け
+ *   v2.1.0
+ *     3軸加速度センサ ( ADXL312 ) 追加
+ *     測距センサ ( GP2Y0A21YK ) の追加
+ *     温度センサ ( LM35 ) の追加
 */
 
 
 // ライブラリをインクルード
 #include <Wire.h>  // I2C通信に関するライブラリ
 
-// スレーブアドレス
-// #define ADXL345_SDO_HIGH ( 0x1D )  // ADXL345スレーブアドレス(SDO=HIGH)
-// #define ADXL345_SDO_LOW ( 0x53 )   // ADXL345スレーブアドレス(SDO=LOW)
-#define ADXL345 ( 0x53 )           // ADXL345スレーブアドレス(SDO=LOW)
-
-// ADXL345レジスタ類
-#define ADXL345_DATA_FORMAT_ADDR ( 0x31 )  // データフォーマットのレジスタアドレス
-#define ADXL345_POWER_CTL_ADDR ( 0x2D )    // パワーコントロールレジスタのアドレス
-#define ADXL345_FIRST_DATA_ADDR ( 0x32 )   // 加速度データが格納されているレジスタの先頭
+#define ADXL312 ( 0x53 )  // スレーブデバイスのアドレス(SDO/ALT グランド接続)
+#define ADXL312_FIRST_DATA_ADDR ( 0x32 )  // 加速度データ格納頭レジスタ
 
 /**
  * 関数名 : setup
@@ -116,19 +113,22 @@ void writeI2C ( byte deviceAddr , byte registerAddr , byte value ) {
 
 
 /*****************
- * 3軸デジタル加速度センサI2C(ADXL345)
+ * 3軸デジタル加速度センサI2C ( ADXL312 )
 *****************/
 
 /**
- * 関数名 : setup_ADXL345_I2C
+ * 関数名 : setup_ADXL312_I2C
  * 引数 : なし
  * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
  * 返り値 : なし
 */
-void setup_ADXL345_I2C () {
+void setup_ADXL312_I2C () {
 
-    writeI2C ( ADXL345 , ADXL345_DATA_FORMAT_ADDR , 0x08 );  // データフォーマットの設定
-    writeI2C ( ADXL345 , ADXL345_POWER_CTL_ADDR , 0x08 );    // 電源管理
+    writeI2C ( ADXL312 , 0x31 , 0x00 );  // DATA_FORMAT(レンジ設定)1.5G
+    // writeI2C ( ADXL312 , 0x31 , 0x01 );  // DATA_FORMAT(レンジ設定)3.0G
+    // writeI2C ( ADXL312 , 0x31 , 0x10 );  // DATA_FORMAT(レンジ設定)6.0G
+    // writeI2C ( ADXL312 , 0x31 , 0x11 );  // DATA_FORMAT(レンジ設定)12G
+    writeI2C ( ADXL312 , 0x2d , 0x08 );  // PWER_CTL
 }
 
 /**
@@ -137,18 +137,21 @@ void setup_ADXL345_I2C () {
  * 処理 : 3軸加速度センサADXL345の初期設定(I2C通信)
  * 返り値 : なし
 */
-float ADXL345AccelXG , ADXL345AccelYG , ADXL345AccelZG;  // 加速度G
-void get_ADXL345_I2C () {
+float ADXL312AccelXG , ADXL312AccelYG , ADXL312AccelZG;  // 加速度G
+void get_ADXL312_I2C () {
 
-    readI2C ( ADXL345 , ADXL345_FIRST_DATA_ADDR , 6 );  // 値を読み込む
+    float resolution = 0.0029;  // 分解能
 
-    // 各軸のデータに直す
-    int16_t x = readI2Cbuf [ 1 ] << 8 | readI2Cbuf [ 0 ];
-    int16_t y = readI2Cbuf [ 3 ] << 8 | readI2Cbuf [ 2 ];
-    int16_t z = readI2Cbuf [ 5 ] << 8 | readI2Cbuf [ 4 ];
+    readI2C ( ADXL312 , ADXL312_FIRST_DATA_ADDR , 6 );  // 値を読み込む
+
+    // 加速度データを格納
+    int16_t x = ( ( ( int ) readI2Cbuf [ 1 ] ) << 8 ) | readI2Cbuf [ 0 ];
+    int16_t y = ( ( ( int ) readI2Cbuf [ 3 ] ) << 8 ) | readI2Cbuf [ 2 ];
+    int16_t z = ( ( ( int ) readI2Cbuf [ 5 ] ) << 8 ) | readI2Cbuf [ 4 ];
 
     // 加速度に直す
-    ADXL345AccelXG = ( float ) x / pow ( 2 , 8 );
-    ADXL345AccelYG = ( float ) y / pow ( 2 , 8 );
-    ADXL345AccelZG = ( float ) z / pow ( 2 , 8 );
+    ADXL312AccelXG = resolution * x;
+    ADXL312AccelYG = resolution * y;
+    ADXL312AccelZG = resolution * z;
+
 }

@@ -138,7 +138,7 @@ void writeSPI ( int ss , byte registerAddr , byte value ) {
  * 引数: ss: 信号線，registerAddr: レジスタアドレス，len: 読み出す長さ
  * 返り血 : なし
 */
-byte readSPIbuf [ readSPI_maxByteNum ];
+byte readSPIbuf [ 6 ];
 void readSPI ( int ss , byte registerAddr , int len ) {
 
     char addr = 0x80 | registerAddr;  // 書き込みフラグを立てる(0b10000000)
